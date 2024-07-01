@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const stations = [
+const estaciones = [
   { name: "El Labrador", lat: -0.155488715, lng: -78.4862017 },
   { name: "Jipijapa", lat: -0.164250208, lng: -78.48351848 },
   { name: "Inaquito", lat: -0.176128084, lng: -78.48332669 },
@@ -34,8 +34,8 @@ const LeafletMap = () => {
     }).addTo(mapRef.current);
 
     // Add station markers as black circles
-    stations.forEach(station => {
-      const marker = L.circleMarker([station.lat, station.lng], {
+    estaciones.forEach(estacion => {
+      const marker = L.circleMarker([estacion.lat, estacion.lng], {
         radius: 6,
         fillColor: 'black',
         color: 'black',
@@ -44,10 +44,10 @@ const LeafletMap = () => {
         fillOpacity: 1
       })
         .addTo(mapRef.current)
-        .bindPopup(station.name);
+        .bindPopup(estacion.name);
 
       // Store the marker in the station object for later use
-      station.marker = marker;
+      estacion.marker = marker;
     });
 
     return () => {
@@ -56,24 +56,24 @@ const LeafletMap = () => {
   }, []);
 
   useEffect(() => {
-    const loadIsochrone = async (station, range) => {
-      const fileName = `${station.name.replace(/ /g, '_')}_${range}min.json`;
+    const loadIsochrone = async (estacion, range) => {
+      const fileName = `${estacion.name.replace(/ /g, '_')}_${range}min.json`;
       const url = `${process.env.PUBLIC_URL}/isochrones/${encodeURIComponent(fileName)}`;
-      console.log(`Loading isochrone from: ${url}`);  // Debug message
+      console.log(`Cargando isócrona desde: ${url}`);  // Debug message
       const response = await fetch(url, { cache: "no-store" });
-      console.log(`Response status: ${response.status} for ${url}`);  // Debug message
+      console.log(`Estado de la respuesta: ${response.status} para ${url}`);  // Debug message
       if (!response.ok) {
-        console.error(`Error loading ${url}: ${response.statusText}`);
-        throw new Error(`Error loading ${url}`);
+        console.error(`Error cargando ${url}: ${response.statusText}`);
+        throw new Error(`Error cargando ${url}`);
       }
       const contentType = response.headers.get("content-type");
-      console.log(`Content type: ${contentType} for ${url}`);  // Debug message
+      console.log(`Tipo de contenido: ${contentType} para ${url}`);  // Debug message
       if (!contentType || !contentType.includes("application/json")) {
-        console.error(`Expected JSON but got: ${contentType}`);
-        throw new Error(`Expected JSON but got: ${contentType}`);
+        console.error(`Se esperaba JSON pero se obtuvo: ${contentType}`);
+        throw new Error(`Se esperaba JSON pero se obtuvo: ${contentType}`);
       }
       const text = await response.text();
-      console.log(`Response text for ${url}: ${text}`);  // Debug message
+      console.log(`Texto de la respuesta para ${url}: ${text}`);  // Debug message
       return JSON.parse(text);
     };
 
@@ -85,10 +85,10 @@ const LeafletMap = () => {
       const newLayer = L.layerGroup().addTo(mapRef.current);
       setIsochronesLayer(newLayer);
 
-      for (const station of stations) {
+      for (const estacion of estaciones) {
         try {
-          console.log(`Adding isochrone for ${station.name} at ${range} minutes`);  // Debug message
-          const isochrone = await loadIsochrone(station, range);
+          console.log(`Añadiendo isócrona para ${estacion.name} a ${range} minutos`);  // Debug message
+          const isochrone = await loadIsochrone(estacion, range);
           L.geoJSON(isochrone, {
             style: {
               color: 'blue',
@@ -100,9 +100,9 @@ const LeafletMap = () => {
           }).addTo(newLayer);
 
           // Bring the marker to the front
-          station.marker.bringToFront();
+          estacion.marker.bringToFront();
         } catch (error) {
-          console.error(`Error adding isochrone for ${station.name} at ${range} minutes:`, error);
+          console.error(`Error añadiendo isócrona para ${estacion.name} a ${range} minutos:`, error);
         }
       }
     };
@@ -112,18 +112,18 @@ const LeafletMap = () => {
 
   return (
     <div>
-      <div id="map" style={{ height: '600px', width: '100%' }}></div>
-      <div id="controls" style={{ margin: '10px' }}>
-        <label htmlFor="timeSelect">Select time in minutes: </label>
+      <div id="controls" style={{ margin: '10px', textAlign: 'center' }}>
+        <label htmlFor="timeSelect">Selecciona el tiempo en minutos: </label>
         <select id="timeSelect" value={timeRange} onChange={(e) => setTimeRange(parseInt(e.target.value, 10))}>
-          <option value="5">5 minutes</option>
-          <option value="10">10 minutes</option>
-          <option value="15">15 minutes</option>
-          <option value="20">20 minutes</option>
-          <option value="25">25 minutes</option>
-          <option value="30">30 minutes</option>
+          <option value="5">5 minutos</option>
+          <option value="10">10 minutos</option>
+          <option value="15">15 minutos</option>
+          <option value="20">20 minutos</option>
+          <option value="25">25 minutos</option>
+          <option value="30">30 minutos</option>
         </select>
       </div>
+      <div id="map" style={{ height: '600px', width: '100%' }}></div>
     </div>
   );
 };
