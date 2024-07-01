@@ -25,6 +25,12 @@ const LeafletMap = () => {
   const [isochronesLayer, setIsochronesLayer] = useState(null);
   const [timeRange, setTimeRange] = useState(15);
 
+  const metroIcon = L.icon({
+    iconUrl: `${process.env.PUBLIC_URL}/metro-icon.svg`,
+    iconSize: [24, 24], // Tamaño del icono
+    iconAnchor: [12, 12] // Punto de anclaje del icono
+  });
+
   useEffect(() => {
     // Initialize the map
     mapRef.current = L.map('map').setView([-0.22, -78.52], 12);
@@ -33,18 +39,16 @@ const LeafletMap = () => {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(mapRef.current);
 
-    // Add station markers as black circles
+    // Add station markers as metro icons
     estaciones.forEach(estacion => {
-      const marker = L.circleMarker([estacion.lat, estacion.lng], {
-        radius: 6,
-        fillColor: 'black',
-        color: 'black',
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 1
-      })
+      const marker = L.marker([estacion.lat, estacion.lng], { icon: metroIcon })
         .addTo(mapRef.current)
-        .bindPopup(estacion.name);
+        .on('mouseover', function () {
+          marker.bindPopup(estacion.name).openPopup();
+        })
+        .on('mouseout', function () {
+          marker.closePopup();
+        });
 
       // Store the marker in the station object for later use
       estacion.marker = marker;
@@ -59,7 +63,7 @@ const LeafletMap = () => {
     const loadIsochrone = async (estacion, range) => {
       const fileName = `${estacion.name.replace(/ /g, '_')}_${range}min.json`;
       const url = `${process.env.PUBLIC_URL}/isochrones/${encodeURIComponent(fileName)}`;
-      console.log(`Cargando isócrona desde: ${url}`);  // Debug message
+      console.log(`Cargando área desde: ${url}`);  // Debug message
       const response = await fetch(url, { cache: "no-store" });
       console.log(`Estado de la respuesta: ${response.status} para ${url}`);  // Debug message
       if (!response.ok) {
@@ -87,7 +91,7 @@ const LeafletMap = () => {
 
       for (const estacion of estaciones) {
         try {
-          console.log(`Añadiendo isócrona para ${estacion.name} a ${range} minutos`);  // Debug message
+          console.log(`Añadiendo área para ${estacion.name} a ${range} minutos`);  // Debug message
           const isochrone = await loadIsochrone(estacion, range);
           L.geoJSON(isochrone, {
             style: {
@@ -99,10 +103,12 @@ const LeafletMap = () => {
             }
           }).addTo(newLayer);
 
-          // Bring the marker to the front
-          estacion.marker.bringToFront();
+          // Asegurarse de que los marcadores se mantengan en la parte superior
+          if (estacion.marker && estacion.marker.bringToFront) {
+            estacion.marker.bringToFront();
+          }
         } catch (error) {
-          console.error(`Error añadiendo isócrona para ${estacion.name} a ${range} minutos:`, error);
+          console.error(`Error añadiendo área para ${estacion.name} a ${range} minutos:`, error);
         }
       }
     };
@@ -111,19 +117,36 @@ const LeafletMap = () => {
   }, [timeRange]);
 
   return (
-    <div>
-      <div id="controls" style={{ margin: '10px', textAlign: 'center' }}>
-        <label htmlFor="timeSelect">Selecciona el tiempo en minutos: </label>
-        <select id="timeSelect" value={timeRange} onChange={(e) => setTimeRange(parseInt(e.target.value, 10))}>
-          <option value="5">5 minutos</option>
-          <option value="10">10 minutos</option>
-          <option value="15">15 minutos</option>
-          <option value="20">20 minutos</option>
-          <option value="25">25 minutos</option>
-          <option value="30">30 minutos</option>
-        </select>
+    <div style={{ display: 'flex', flexDirection: 'row' }}>
+      <div style={{ flex: 1 }}>
+        <div id="controls" style={{ margin: '10px', textAlign: 'center' }}>
+          <label htmlFor="timeSelect">Selecciona el tiempo en minutos: </label>
+          <select id="timeSelect" value={timeRange} onChange={(e) => setTimeRange(parseInt(e.target.value, 10))}>
+            <option value="5">5 minutos</option>
+            <option value="10">10 minutos</option>
+            <option value="15">15 minutos</option>
+            <option value="20">20 minutos</option>
+            <option value="25">25 minutos</option>
+            <option value="30">30 minutos</option>
+          </select>
+        </div>
+        <div id="map" style={{ height: '600px', width: '100%' }}></div>
       </div>
-      <div id="map" style={{ height: '600px', width: '100%' }}></div>
+      <div style={{
+        width: '300px',
+        padding: '10px',
+        backgroundColor: 'white',
+        boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+        zIndex: 1000
+      }}>
+        <h2>Información</h2>
+        <p>
+          Este mapa muestra las áreas a las que se puede llegar caminando desde cada estación del metro de Quito 
+          en un tiempo determinado. Selecciona el tiempo de caminata en el menú desplegable y observa cómo cambia el área 
+          alrededor de cada estación. Esto te puede ayudar a planificar mejor tus viajes y conocer qué tan lejos puedes 
+          llegar a pie desde cada estación.
+        </p>
+      </div>
     </div>
   );
 };

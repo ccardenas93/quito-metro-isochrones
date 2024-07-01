@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Quito Metro Stations 15-Minute Walk Isochrones</h1>
+        <h1>Áreas de Caminata desde/hacia las Estaciones del Metro de Quito</h1>
       </header>
       <LeafletMap />
     </div>
