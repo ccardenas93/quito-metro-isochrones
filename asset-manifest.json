@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/quito-metro-isochrones/static/css/main.f3822636.css",
-    "main.js": "/quito-metro-isochrones/static/js/main.a863cffc.js",
+    "main.js": "/quito-metro-isochrones/static/js/main.1f8b177b.js",
     "static/js/453.3ad193c1.chunk.js": "/quito-metro-isochrones/static/js/453.3ad193c1.chunk.js",
     "index.html": "/quito-metro-isochrones/index.html",
     "main.f3822636.css.map": "/quito-metro-isochrones/static/css/main.f3822636.css.map",
-    "main.a863cffc.js.map": "/quito-metro-isochrones/static/js/main.a863cffc.js.map",
+    "main.1f8b177b.js.map": "/quito-metro-isochrones/static/js/main.1f8b177b.js.map",
     "453.3ad193c1.chunk.js.map": "/quito-metro-isochrones/static/js/453.3ad193c1.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f3822636.css",
-    "static/js/main.a863cffc.js"
+    "static/js/main.1f8b177b.js"
   ]
 }
